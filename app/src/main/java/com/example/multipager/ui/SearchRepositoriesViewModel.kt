@@ -1,6 +1,8 @@
 package com.example.multipager.ui
 
 import androidx.lifecycle.*
+import com.example.multipager.data.GithubRepository
+import com.example.multipager.model.RepoSearchResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview

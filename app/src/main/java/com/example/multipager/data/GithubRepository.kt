@@ -1,10 +1,10 @@
 package com.example.multipager.data
 
 import android.util.Log
-import com.example.android.codelabs.paging.api.GithubService
-import com.example.android.codelabs.paging.api.IN_QUALIFIER
-import com.example.android.codelabs.paging.model.Repo
-import com.example.android.codelabs.paging.model.RepoSearchResult
+import com.example.multipager.api.GithubService
+import com.example.multipager.api.IN_QUALIFIER
+import com.example.multipager.model.Repo
+import com.example.multipager.model.RepoSearchResult
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
