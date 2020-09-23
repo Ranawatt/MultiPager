@@ -1,17 +1,16 @@
 package com.example.multipager.ui
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
-import com.example.multipager.data.GithubRepository
-import com.example.multipager.model.Repo
-import com.example.multipager.model.RepoSearchResult
+import androidx.lifecycle.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.launch
 
 /**
  * ViewModel for the [SearchRepositoriesActivity] screen.
  * The ViewModel works with the [GithubRepository] to get the data.
  */
+@ExperimentalCoroutinesApi
 class SearchRepositoriesViewModel(private val repository: GithubRepository) : ViewModel() {
 
     companion object {
@@ -19,13 +18,11 @@ class SearchRepositoriesViewModel(private val repository: GithubRepository) : Vi
     }
 
     private val queryLiveData = MutableLiveData<String>()
-    private val repoResult: LiveData<RepoSearchResult> = Transformations.map(queryLiveData) {
-        repository.search(it)
-    }
-
-    val repos: LiveData<List<Repo>> = Transformations.switchMap(repoResult) { it -> it.data }
-    val networkErrors: LiveData<String> = Transformations.switchMap(repoResult) { it ->
-        it.networkErrors
+    val repoResult: LiveData<RepoSearchResult> = queryLiveData.switchMap { queryString ->
+        liveData {
+            val repos = repository.getSearchResultStream(queryString).asLiveData(Dispatchers.Main)
+            emitSource(repos)
+        }
     }
 
     /**
@@ -37,15 +34,12 @@ class SearchRepositoriesViewModel(private val repository: GithubRepository) : Vi
 
     fun listScrolled(visibleItemCount: Int, lastVisibleItemPosition: Int, totalItemCount: Int) {
         if (visibleItemCount + lastVisibleItemPosition + VISIBLE_THRESHOLD >= totalItemCount) {
-            val immutableQuery = lastQueryValue()
+            val immutableQuery = queryLiveData.value
             if (immutableQuery != null) {
-                repository.requestMore(immutableQuery)
+                viewModelScope.launch {
+                    repository.requestMore(immutableQuery)
+                }
             }
         }
     }
-
-    /**
-     * Get the last query value.
-     */
-    fun lastQueryValue(): String? = queryLiveData.value
 }
